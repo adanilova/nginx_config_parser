@@ -1,8 +1,10 @@
 #!/usr/bin/python
 
+import re
+
 file_name = "nginx.conf"
 
-file = open(file_name, "r")
-content = file.read()
-
-print content
+with open(file_name) as fp:
+   line = fp.readline()
+   while line:
+        print line
