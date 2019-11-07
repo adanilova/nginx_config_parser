@@ -21,8 +21,7 @@ def check_regex(line):
     listener_matches = re.match(regex_who_is_listening,line)
     if listener_matches:
         listener = listener_matches.group(1)
-        message = "listener is {}".format(listener)
-        return dict(success=False,listener_unknown=False,message=message)
+        return dict(success=False,listener_unknown=False,message=listener)
     return dict(success=False,listener_unknown=True,message="")
 
 lines = [line.rstrip('\n') for line in open(file_name)]
