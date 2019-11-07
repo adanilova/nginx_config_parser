@@ -1,11 +1,16 @@
 #!/usr/bin/python
 
+import argparse
+from os import path
 import re
+
 
 file_name = "nginx.conf"
 regex_address = r"\s*(\w?.*)\s*:([0-9]*)[;]"
 regex_listen = r".*listen\s*([0-9]*)[;]"
 regex_who_is_listening = r".*[{].[#]\s(.*)"
+
+
 def check_regex(line):
     address_matches = re.match(regex_address,line)
     if address_matches:
@@ -24,16 +29,36 @@ def check_regex(line):
         return dict(success=False,listener_unknown=False,message=listener)
     return dict(success=False,listener_unknown=True,message="")
 
-lines = [line.rstrip('\n') for line in open(file_name)]
 
-previous_message = ""
-for line in lines:
-    response = check_regex(line)
-    if not response["success"]:
+def main(file_path):
+    if not file_path:
+        print "No file selected"
+        return
+
+    if path.exists(file_path) == False:
+        print "Selected file not exists"
+        return
+
+    lines = [line.rstrip('\n') for line in open(file_path)]
+
+    previous_message = ""
+    for line in lines:
+        response = check_regex(line)
+        if not response["success"]:
+            previous_message = response["message"]
+            continue
+        if response["listener_unknown"]:
+            print response["message"] + " " + previous_message
+        else:
+            print response["message"]
         previous_message = response["message"]
-        continue
-    if response["listener_unknown"]:
-        print response["message"] + " " + previous_message
-    else:
-        print response["message"]
-    previous_message = response["message"]
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description='Find all ports usage in nginx config file')
+    parser.add_argument('-f', '--file', metavar='',
+                        help='nginx config file')
+    args = parser.parse_args()
+    file_path = args.file
+    main(file_path)
