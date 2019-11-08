@@ -7,3 +7,4 @@ listen localhost:8000;
     listen noentry:90;
     listen 192.168.99.100;
 listen 13;
+listen 8000 default_server;
