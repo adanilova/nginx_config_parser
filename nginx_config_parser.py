@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
-from os import path
+from os import path, listdir
 import re
 import requests
 
 main_config = "/etc/nginx/nginx.conf"
-config_dir = "/etc/nginx/sites-enabled/"
+config_dirs = ["/etc/nginx/conf.d/", "/etc/nginx/sites-enabled/"]
 
 regex_listen = r"^\s*listen\s*((\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}|localhost|[*])?[:]?(\d{1,65535})?).*;.*$"
 regex_nginx = r"^.*nginx.*$"
@@ -37,9 +37,9 @@ def ping(ip_address, port):
     flag = parse_nginx(server)
     return dict(ip_address=ip_address, port=port, flag=flag)
 
-def main():
-    output = []
-    lines = [line.rstrip('\n') for line in open("test.txt")]
+def parse_file(file_path):
+    file_results = []
+    lines = [line.rstrip('\n') for line in open(file_path)]
     for line in lines:
         result = parse_listen(line)
         if not result["success"]:
@@ -53,7 +53,26 @@ def main():
 
         info = ping(ip_address, port)
         print "{}:{} {}".format(info["ip_address"], info["port"], info["flag"])
-        output.append(info)
+        file_results.append(info)
+    return file_results
+
+def main():
+    output = []
+    files_paths = [main_config]
+
+    for dir_path in config_dirs:
+        abspath = path.abspath(dir_path)
+        if path.exists(abspath) == False or path.isdir(abspath) == False:
+            continue
+        sub_files_paths = [path.join(abspath, f) for f in listdir(abspath) if path.isfile(path.join(abspath, f))]
+        files_paths = files_paths + sub_files_paths
+    
+    for file_path in files_paths:
+        file_results = parse_file(file_path)
+        if not file_results:
+            continue
+        output.append(file_results)
+
     return output
 
 if __name__ == "__main__":
