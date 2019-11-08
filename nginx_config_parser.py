@@ -31,7 +31,7 @@ def ping(ip_address, port):
     try:
         response = requests.get("http://{}:{}".format(ip_address, port), timeout=1)
     except:
-        return dict(ip_address=ip_address, port=port, flag="Error")
+        return dict(ip_address=ip_address, port=port, flag=0)
     headers = response.headers
     server = "" if headers.get("Server") == None else headers.get("Server")
     flag = parse_nginx(server)
