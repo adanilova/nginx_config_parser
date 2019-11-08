@@ -4,61 +4,25 @@ import argparse
 from os import path
 import re
 
+main_config = "/etc/nginx/nginx.conf"
+config_dir = "/etc/nginx/sites-enabled/"
 
-file_name = "nginx.conf"
-regex_address = r"\s*(\w?.*)\s*:([0-9]*)[;]"
-regex_listen = r".*listen\s*([0-9]*)[;]"
-regex_who_is_listening = r".*[{].[#]\s(.*)"
+regex_listen = r"^\s*listen\s*((\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}|localhost|[*])?[:]?(\d{1,65535})?);.*$"
 
-
-def check_regex(line):
-    address_matches = re.match(regex_address,line)
-    if address_matches:
-        who = address_matches.group(1)
-        port = address_matches.group(2)
-        message = "Port {} is listening by {}".format(port, who)
-        return dict(success=True,listener_unknown=False,message=message)
-    listen_matches = re.match(regex_listen,line)
-    if listen_matches:
-        port = listen_matches.group(1)
-        message = "Port {} is listening".format(port)
-        return dict(success=True,listener_unknown=True,message=message)
-    listener_matches = re.match(regex_who_is_listening,line)
-    if listener_matches:
-        listener = listener_matches.group(1)
-        return dict(success=False,listener_unknown=False,message=listener)
-    return dict(success=False,listener_unknown=True,message="")
+def parse_listen(line):
+    matches = re.match(regex_listen,line)
+    if matches:
+        ip_address = matches.group(2)
+        port = matches.group(3)
+        print "IP_ADDRESS: {}    PORT: {}".format(ip_address, port)
 
 
-def main(file_path):
-    if not file_path:
-        print "No file selected"
-        return
-
-    if path.exists(file_path) == False:
-        print "Selected file not exists"
-        return
-
-    lines = [line.rstrip('\n') for line in open(file_path)]
-
-    previous_message = ""
+def main():
+    
+    lines = [line.rstrip('\n') for line in open("test.txt")]
     for line in lines:
-        response = check_regex(line)
-        if not response["success"]:
-            previous_message = response["message"]
-            continue
-        if response["listener_unknown"]:
-            print response["message"] + " " + previous_message
-        else:
-            print response["message"]
-        previous_message = response["message"]
+        parse_listen(line)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description='Find all ports usage in nginx config file')
-    parser.add_argument('-f', '--file', metavar='',
-                        help='nginx config file')
-    args = parser.parse_args()
-    file_path = args.file
-    main(file_path)
+    main()
