@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import argparse
 from os import path
 import re
 import requests
@@ -28,17 +27,18 @@ def parse_nginx(line):
     return flag
 
 def ping(ip_address, port):
-    response = requests.get("http://{}:{}".format(ip_address, port))
+    response = None
+    try:
+        response = requests.get("http://{}:{}".format(ip_address, port), timeout=1)
+    except:
+        return dict(ip_address=ip_address, port=port, flag="Error")
     headers = response.headers
     server = "" if headers.get("Server") == None else headers.get("Server")
     flag = parse_nginx(server)
     return dict(ip_address=ip_address, port=port, flag=flag)
 
-
 def main():
-
     output = []
-
     lines = [line.rstrip('\n') for line in open("test.txt")]
     for line in lines:
         result = parse_listen(line)
