@@ -40,8 +40,8 @@ def parse_listen(line):
     port = None
     success = False
     if matches:
-        ip_address = matches.group(2)
-        port = matches.group(3)
+        ip_address = matches.group(3)
+        port = matches.group(4)
         success = True
     return dict(ip_address=ip_address, port=port, success=success)
 
