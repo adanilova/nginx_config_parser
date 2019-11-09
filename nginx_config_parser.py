@@ -10,8 +10,9 @@ config_dirs = ["/etc/nginx/conf.d/", "/etc/nginx/sites-enabled/"]
 regex_listen = r"^\s*listen\s*(((\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}|localhost|[*])[:]?)?(\d{1,65535})?);"
 regex_nginx = r"^.*nginx.*$"
 
+
 def parse_listen(line):
-    matches = re.match(regex_listen,line)
+    matches = re.match(regex_listen, line)
     ip_address = None
     port = None
     success = False
@@ -21,21 +22,25 @@ def parse_listen(line):
         success = True
     return dict(ip_address=ip_address, port=port, success=success)
 
+
 def parse_nginx(line):
-    match = re.match(regex_nginx,line)
+    match = re.match(regex_nginx, line)
     flag = 1 if match else 0
     return flag
+
 
 def ping(ip_address, port):
     response = None
     try:
-        response = requests.get("http://{}:{}".format(ip_address, port), timeout=1)
+        response = requests.get(
+            "http://{}:{}".format(ip_address, port), timeout=1)
     except:
         return dict(ip_address=ip_address, port=port, flag=0)
     headers = response.headers
     server = "" if not headers.get("Server") else headers.get("Server")
     flag = parse_nginx(server)
     return dict(ip_address=ip_address, port=port, flag=flag)
+
 
 def parse_file(file_path):
     file_results = []
@@ -56,6 +61,7 @@ def parse_file(file_path):
         file_results.append(info)
     return file_results
 
+
 def main():
     output = []
     files_paths = [main_config]
@@ -64,9 +70,10 @@ def main():
         abspath = path.abspath(dir_path)
         if not path.exists(abspath) or not path.isdir(abspath):
             continue
-        sub_files_paths = [path.join(abspath, f) for f in listdir(abspath) if path.isfile(path.join(abspath, f))]
+        sub_files_paths = [path.join(abspath, f) for f in listdir(
+            abspath) if path.isfile(path.join(abspath, f))]
         files_paths = files_paths + sub_files_paths
-    
+
     for file_path in files_paths:
         file_results = parse_file(file_path)
         if not file_results:
@@ -74,6 +81,7 @@ def main():
         output.append(file_results)
 
     return output
+
 
 if __name__ == "__main__":
     main()
