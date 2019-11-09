@@ -4,6 +4,12 @@ Script scan `/etc/nginx/nginx.conf`, all **files** in `/etc/nginx/conf.d/` and `
 
 * nginx_config_parser.py - executable script file
 
+Install requirements
+```
+pip install -r requirements.txt
+```
+
+Run script
 ```
 ./nginx_config_parser.py
 ```
