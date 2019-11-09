@@ -3,6 +3,11 @@
 from os import path, listdir
 import re
 import requests
+import psutil
+
+connections = psutil.net_connections()
+print connections
+
 
 main_config = "/etc/nginx/nginx.conf"
 config_dirs = ["/etc/nginx/conf.d/", "/etc/nginx/sites-enabled/"]
