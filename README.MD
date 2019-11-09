@@ -13,3 +13,5 @@ Run script
 ```
 ./nginx_config_parser.py
 ```
+
+For correct working requires **sudo privileges**.
