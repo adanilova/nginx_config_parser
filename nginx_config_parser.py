@@ -7,7 +7,7 @@ import requests
 main_config = "/etc/nginx/nginx.conf"
 config_dirs = ["/etc/nginx/conf.d/", "/etc/nginx/sites-enabled/"]
 
-regex_listen = r"^\s*listen\s*((\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}|localhost|[*])?[:]?(\d{1,65535})?).*;.*$"
+regex_listen = r"^\s*listen\s*(((\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}|localhost|[*])[:]?)?(\d{1,65535})?);"
 regex_nginx = r"^.*nginx.*$"
 
 def parse_listen(line):
