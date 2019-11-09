@@ -85,7 +85,7 @@ def main():
     output = []
     files_paths = []
 
-    if path.exists(main_config) or path.isfile(main_config):
+    if path.exists(main_config) and path.isfile(main_config):
         files_paths.append(main_config)
 
     for dir_path in config_dirs:
