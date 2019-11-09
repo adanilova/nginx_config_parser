@@ -23,7 +23,7 @@ def parse_listen(line):
 
 def parse_nginx(line):
     match = re.match(regex_nginx,line)
-    flag = 1 if match != None else 0
+    flag = 1 if match else 0
     return flag
 
 def ping(ip_address, port):
@@ -33,7 +33,7 @@ def ping(ip_address, port):
     except:
         return dict(ip_address=ip_address, port=port, flag=0)
     headers = response.headers
-    server = "" if headers.get("Server") == None else headers.get("Server")
+    server = "" if not headers.get("Server") else headers.get("Server")
     flag = parse_nginx(server)
     return dict(ip_address=ip_address, port=port, flag=flag)
 
@@ -62,7 +62,7 @@ def main():
 
     for dir_path in config_dirs:
         abspath = path.abspath(dir_path)
-        if path.exists(abspath) == False or path.isdir(abspath) == False:
+        if not path.exists(abspath) or not path.isdir(abspath):
             continue
         sub_files_paths = [path.join(abspath, f) for f in listdir(abspath) if path.isfile(path.join(abspath, f))]
         files_paths = files_paths + sub_files_paths
