@@ -83,14 +83,16 @@ def parse_file(file_path):
 
 def main():
     output = []
-    files_paths = [main_config]
+    files_paths = []
+
+    if path.exists(main_config) or path.isfile(main_config):
+        files_paths.append(main_config)
 
     for dir_path in config_dirs:
-        abspath = path.abspath(dir_path)
-        if not path.exists(abspath) or not path.isdir(abspath):
+        if not path.exists(dir_path) or not path.isdir(dir_path):
             continue
-        sub_files_paths = [path.join(abspath, f) for f in listdir(
-            abspath) if path.isfile(path.join(abspath, f))]
+        sub_files_paths = [path.join(dir_path, f) for f in listdir(
+            dir_path) if path.isfile(path.join(dir_path, f))]
         files_paths = files_paths + sub_files_paths
 
     for file_path in files_paths:
