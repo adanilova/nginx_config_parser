@@ -1,0 +1,5 @@
+*
+!.gitignore
+!nginx_config_parser.py
+!README.MD
+!requirements.txt
