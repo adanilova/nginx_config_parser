@@ -5,15 +5,33 @@ import re
 import requests
 import psutil
 
-connections = psutil.net_connections()
-print connections
-
-
 main_config = "/etc/nginx/nginx.conf"
 config_dirs = ["/etc/nginx/conf.d/", "/etc/nginx/sites-enabled/"]
 
 regex_listen = r"^\s*listen\s*(((\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}|localhost|[*])[:]?)?(\d{1,65535})?);"
 regex_nginx = r"^.*nginx.*$"
+
+
+def find_nginx_listen():
+    result = []
+    connections = psutil.net_connections()
+    for connection in connections:
+        pid = connection.pid
+        if not pid:
+            continue
+        process = psutil.Process(pid)
+        if not process:
+            continue
+        programm = process.name()
+        if programm != "nginx":
+            continue
+        ip_address = connection.laddr.ip
+        port = "{}".format(connection.laddr.port)
+        result.append(dict(ip_address=ip_address, port=port))
+    return result
+
+
+nginx_items = find_nginx_listen()
 
 
 def parse_listen(line):
@@ -34,17 +52,9 @@ def parse_nginx(line):
     return flag
 
 
-def ping(ip_address, port):
-    response = None
-    try:
-        response = requests.get(
-            "http://{}:{}".format(ip_address, port), timeout=1)
-    except:
-        return dict(ip_address=ip_address, port=port, flag=0)
-    headers = response.headers
-    server = "" if not headers.get("Server") else headers.get("Server")
-    flag = parse_nginx(server)
-    return dict(ip_address=ip_address, port=port, flag=flag)
+def check_nginx_owner(ip_address, port):
+    looking_item = dict(ip_address=ip_address, port=port)
+    return 1 if looking_item in nginx_items else 0
 
 
 def parse_file(file_path):
@@ -61,8 +71,12 @@ def parse_file(file_path):
         if ip_address == "*":
             ip_address = "0.0.0.0"
 
-        info = ping(ip_address, port)
-        print "{}:{} {}".format(info["ip_address"], info["port"], info["flag"])
+        is_nginx_owner = check_nginx_owner(ip_address, port)
+
+        print "{}:{} {}".format(ip_address,
+                                port, is_nginx_owner)
+
+        info = dict(ip_address=ip_address, port=port, flag=is_nginx_owner)
         file_results.append(info)
     return file_results
 
