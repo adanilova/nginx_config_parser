@@ -147,15 +147,15 @@ def get_nginx_host(connection):
     # get connection PID, check for None
     pid = connection.pid
     if not pid:
-        None
+        return None
     # get full process info by PID
     process = psutil.Process(pid)
     if not process:
-        None
+        return None
     # get process program name
     programm = process.name()
     if programm != NGINX_PROGRAM_NAME:
-        None
+        return None
     # get local ip_address
     ip_address = connection.laddr.ip
     # get local port
