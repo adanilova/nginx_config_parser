@@ -13,14 +13,7 @@ CONFIG_DIRS = ["/etc/nginx/conf.d/", "/etc/nginx/sites-enabled/"]
 NGINX_PROGRAM_NAME = "nginx"
 
 # regex for parse "listen" directive in configs
-REGEX_LISTEN = r"^\s*listen\s*(((\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}|localhost|[*])[:]?)?(\d{1,65535})?);"
-
-
-# class for host address
-class HostAddress:
-    def __init__(self, ip_address, port):
-        self.ip_address = ip_address
-        self.port = port
+REGEX_LISTEN = r"^\s*listen\s*(((\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}|localhost|[*])[:]?)?(\d{1,65535})?)"
 
 
 # 1. main script function
@@ -52,12 +45,14 @@ def main():
         if not file_hosts:
             continue
         # append parsed hosts to hosts pool
-        hosts_pool.append(file_hosts)
+        hosts_pool.extend(file_hosts)
 
     # distinct array
-    hosts_pool = list(set(hosts_pool))
+    unique_hosts_pool = []
+    map(lambda x: not x in unique_hosts_pool and unique_hosts_pool.append(x), hosts_pool)
+
     # return all founded hosts with nginx owner flag
-    return check_for_nginx(hosts_pool)
+    return check_for_nginx(unique_hosts_pool)
 
 
 # 2. parse config file
@@ -96,7 +91,7 @@ def parse_listen(line):
         ip_address = "0.0.0.0"
 
     # return parsed host
-    return HostAddress(ip_address, port)
+    return dict(ip_address=ip_address, port=port)
 
 
 # 4. check hosts in hosts pool is nginx process listening them
@@ -112,11 +107,11 @@ def check_for_nginx(hosts_pool):
         flag = False
 
         # check nginx listen 0.0.0.0 with same port
-        if HostAddress("0.0.0.0", host.port) in nginx_hosts:
-            flag = True
+        if dict(ip_address="0.0.0.0", port=host["port"]) in nginx_hosts:
+            flag = 1
         else:
             # check nginx listen host ip_address and port
-            flag = host in nginx_hosts
+            flag = 1 if host in nginx_hosts else 0
 
         print_host(host, flag)
         result.append(dict(host=host, flag=flag))
@@ -129,6 +124,7 @@ def get_nginx_hosts():
     nginx_hosts = []
     # get all net connections
     connections = psutil.net_connections()
+
     # for each connection
     for connection in connections:
         # try to get nginx host from net connection
@@ -162,12 +158,12 @@ def get_nginx_host(connection):
     port = "{}".format(connection.laddr.port)
 
     # return nginx host
-    return HostAddress(ip_address, port)
+    return dict(ip_address=ip_address, port=port)
 
 
 # 7. print host result output
 def print_host(host, flag):
-    print "{}:{} {}".format(host.ip_address, host.port, flag)
+    print "{}:{} {}".format(host["ip_address"], host["port"], flag)
 
 
 # main script scope
